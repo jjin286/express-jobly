@@ -214,7 +214,7 @@ class User {
     if (!user) throw new NotFoundError(`No user: ${username}`);
   }
 
-  /** Apply user to job
+  /** Apply/Unapply user to job
    *
    * - username: username applying
    * - jobId: job ID
@@ -241,10 +241,62 @@ class User {
 
     if(!user) throw new NotFoundError(`No username: ${username}`);
 
-    await db.query(`
-      INSERT INTO applications (job_id, username)
-      VALUES ($1, $2)
+    const applicationResult = await db.query(`
+      SELECT username, job_id
+      FROM applications
+      WHERE job_id=$1 AND username=$2
     `, [jobId, username]);
+
+    const application = applicationResult.rows[0];
+
+    if(!application){
+      await db.query(`
+        INSERT INTO applications (job_id, username)
+        VALUES ($1, $2)
+      `, [jobId, username]);
+
+      return { applied: jobId };
+    } else {
+      await db.query(`
+        DELETE FROM applications
+        WHERE job_id=$1 AND username=$2
+      `, [jobId, username]);
+
+      return { unapplied: jobId };
+    }
+  }
+
+  static async unapplyToJob(username, jobId){
+    const jobResult = await db.query(`
+      SELECT id
+      FROM jobs
+      WHERE id = $1
+    `, [jobId]);
+
+    const job = jobResult.rows[0];
+
+    if(!job) throw new NotFoundError(`No job: ${jobId}`);
+
+    const userResult = await db.query(`
+      SELECT username
+      FROM users
+      WHERE username = $1
+    `, [username]);
+
+    const user = userResult.rows[0];
+
+    if(!user) throw new NotFoundError(`No username: ${username}`);
+
+    const result = await db.query(`
+      DELETE FROM applications
+      WHERE job_id=$1 AND username=$2
+      RETURNING job_id
+    `, [jobId, username]);
+
+    const application = result.rows[0];
+
+    if(!application) throw new NotFoundError(`No application`);
+
   }
 }
 

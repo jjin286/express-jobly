@@ -135,9 +135,9 @@ router.post(
   async function (req, res, next){
     const jobId = Number(req.params.id);
 
-    await User.applyToJob(req.params.username, jobId);
+    const resp = await User.applyToJob(req.params.username, jobId);
 
-    return res.json({ applied: jobId });
+    return res.json(resp);
   });
 
 module.exports = router;
