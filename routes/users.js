@@ -123,5 +123,21 @@ router.delete(
     return res.json({ deleted: req.params.username });
   });
 
+/** POST /[username]/jobs/[id] => { applied: jobId }
+ *
+ * Authorization required: correct user or admin
+ */
+
+router.post(
+  "/:username/jobs/:id",
+  ensureLoggedIn,
+  ensureCorrectUserOrAdmin,
+  async function (req, res, next){
+    const jobId = Number(req.params.id);
+
+    await User.applyToJob(req.params.username, jobId);
+
+    return res.json({ applied: jobId });
+  });
 
 module.exports = router;
