@@ -9,6 +9,7 @@ const databaseUri = getDatabaseUri();
 
 const db = new Client({
   connectionString: databaseUri,
+  ssl: {rejectUnauthorized: false},
 });
 
 async function connectDb() {
