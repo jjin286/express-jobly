@@ -16,6 +16,7 @@ const jobsRoutes = require("./routes/jobs");
 const morgan = require("morgan");
 
 const app = express();
+app.listen(10000);
 
 app.use(cors());
 app.use(express.json());
